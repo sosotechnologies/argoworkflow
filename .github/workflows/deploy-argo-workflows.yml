@@ -1,0 +1,32 @@
+name: Deploy Argo Workflows
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Kubeconfig
+      run: echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > $HOME/.kube/config
+
+    - name: Install kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+
+    - name: Deploy 1-example-workflow
+      run: kubectl apply -f argoworkflow/1-example-workflow.yaml
+
+    - name: Deploy 2-example-2-workflow
+      run: kubectl apply -f argoworkflow/2-example-2-workflow.yaml
+
+    - name: Deploy 3-DAG-example-workflow
+      run: kubectl apply -f argoworkflow/3-DAG-example-workflow.yaml
